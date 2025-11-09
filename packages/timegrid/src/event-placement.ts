@@ -93,6 +93,8 @@ export function computeResourceLevelCoords(segPlacements: TimeColFgSegPlacement[
   
   for (const segPlacement of segPlacements) {
 
+    if (!segPlacement.rect) continue
+
     // Keep size consistent, do not mix full width events with partial width events.
     segPlacement.rect.thickness = levelCoordStepSize
     
