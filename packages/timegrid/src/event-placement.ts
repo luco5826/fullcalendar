@@ -80,3 +80,39 @@ export function computeFgSegPlacements(
 
   return { segPlacements, hiddenGroups }
 }
+
+
+export function computeResourceLevelCoords(segPlacements: TimeColFgSegPlacement[]): TimeColFgSegPlacement[] {
+  const levelCoordStepSize = 1 / new Set(segPlacements.map((segPlacement) => segPlacement.seg.eventRange.def.extendedProps.resourceId)).size;
+  let currentLevelCoord = 0
+  let currentStackDepth = 0
+
+  // No actual need to sort, just keep consistency across re-renders otherwise moving an event before the first will shift all the other events.
+  segPlacements.sort((a, b) => a.seg.eventRange.def.extendedProps.resourceId - b.seg.eventRange.def.extendedProps.resourceId)
+  const visitedResourceIds = new Map<number, {levelCoord: number, stackDepth: number}>()
+  
+  for (const segPlacement of segPlacements) {
+
+    // Keep size consistent, do not mix full width events with partial width events.
+    segPlacement.rect.thickness = levelCoordStepSize
+    
+    const resourceId = segPlacement.seg.eventRange.def.extendedProps.resourceId
+
+    // Keep all resources at the same levelCoord and stackDepth starting from 0 for both
+    // and increasing each value by its step size.
+    const resourceInfo = visitedResourceIds.get(resourceId)
+    if (resourceInfo) {
+      const {levelCoord, stackDepth} = resourceInfo
+      segPlacement.rect.levelCoord = levelCoord
+      segPlacement.rect.stackDepth = stackDepth
+    } else {
+      segPlacement.rect.levelCoord = currentLevelCoord
+      segPlacement.rect.stackDepth = currentStackDepth
+      visitedResourceIds.set(resourceId, {levelCoord: currentLevelCoord, stackDepth: currentStackDepth})
+      currentLevelCoord = currentLevelCoord + levelCoordStepSize
+      currentStackDepth = currentStackDepth + 1
+    }
+  }
+
+  return segPlacements
+}

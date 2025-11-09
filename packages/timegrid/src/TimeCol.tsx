@@ -13,7 +13,7 @@ import { TimeColMoreLink } from './TimeColMoreLink.js'
 import { TimeColsSeg } from './TimeColsSeg.js'
 import { TimeColsSlatsCoords } from './TimeColsSlatsCoords.js'
 import { SegWebRect } from './seg-web.js'
-import { computeFgSegPlacements, computeSegVCoords } from './event-placement.js'
+import { computeFgSegPlacements, computeResourceLevelCoords, computeSegVCoords } from './event-placement.js'
 import { TimeColEvent } from './TimeColEvent.js'
 
 export interface TimeColProps {
@@ -153,6 +153,8 @@ export class TimeCol extends BaseComponent<TimeColProps> {
     let isMirror = isDragging || isResizing || isDateSelecting
     let segVCoords = computeSegVCoords(segs, date, slatCoords, eventMinHeight)
     let { segPlacements, hiddenGroups } = computeFgSegPlacements(segs, segVCoords, eventOrderStrict, eventMaxStack)
+
+    segPlacements = computeResourceLevelCoords(segPlacements)
 
     return (
       <Fragment>
